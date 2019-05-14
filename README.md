@@ -4,6 +4,7 @@ Learning invariant representations with mutual information regularization
 ![Alt text](show/decision_no_pen.png?raw=true "Decision surface in cartesian space for normally trained network")
 ![Alt text](show/decision_with_pen.png?raw=true "Decision surface in cartesian space for penalized network")
 
+* [Toy Example on Binder](https://hub.mybinder.org/user/justin-tan-invariant_reps-iqsxl56t/notebooks/notebooks/toy_MI.ipynb)
 
 ### Dependencies
 * Python 3.6
