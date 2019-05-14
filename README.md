@@ -1,2 +1,2 @@
-# invariant_reps
+# Invariant Representations
 Learning invariant representations with mutual information regularization
