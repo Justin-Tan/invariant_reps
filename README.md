@@ -1,8 +1,7 @@
 # Invariant Representations
 Learning invariant representations with mutual information regularization
 
-![Alt text](show/decision_no_pen.png?raw=true "Decision surface in cartesian space for normally trained network")
-![Alt text](show/decision_with_pen.png?raw=true "Decision surface in cartesian space for penalized network")
+![Alt-text-1](show/decision_no_pen.png?raw=true "Decision surface in cartesian space for normally trained network") ![Alt-text-2](show/decision_with_pen.png?raw=true "Decision surface in cartesian space for penalized network")
 
 * [Toy Example](https://nbviewer.jupyter.org/github/Justin-Tan/invariant_reps/blob/master/notebooks/toy_MI.ipynb)
 * [Toy Example on Binder](https://hub.mybinder.org/user/justin-tan-invariant_reps-iqsxl56t/notebooks/notebooks/toy_MI.ipynb)
