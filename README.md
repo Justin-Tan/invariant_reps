@@ -1,5 +1,5 @@
 # Invariant Representations
-Learning invariant representations with mutual information regularization
+Learning invariant representations with mutual information regularization.
 
 <img src="show/decision_no_pen.png" width="425"/> <img src="show/decision_with_pen.png" width="425"/> 
 
