@@ -45,20 +45,22 @@ class Network(object):
         # Toy dense network for binary classification
         
         init = tf.contrib.layers.xavier_initializer()
-        shape = [128 for _ in range(int(n_layers))]
+        shape = [64 for _ in range(int(n_layers))]
         assert n_layers <= len(shape), 'Number of requested layers too high.'
         kwargs = {'center': True, 'scale': True, 'training': training, 'fused': True, 'renorm': True}
         print('Input X shape', x.get_shape())
 
         with tf.variable_scope(name, initializer=init, reuse=tf.AUTO_REUSE) as scope:
-            h0 = tf.layers.dense(x, units=shape[0], activation=actv)
-            h0 = tf.layers.batch_normalization(h0, **kwargs)
+            h0 = tf.layers.dense(x, units=shape[0], activation=None)
+            # h0 = tf.layers.batch_normalization(h0, **kwargs)
+            h0 = tf.contrib.layers.layer_norm(h0, center=True, scale=True, activation_fn=actv)
             h = h0
             current_layer = 1
 
             while current_layer < n_layers:
-                h = tf.layers.dense(h, units=shape[current_layer], activation=actv)
-                h = tf.layers.batch_normalization(h, **kwargs)
+                h = tf.layers.dense(h, units=shape[current_layer], activation=None)
+                # h = tf.layers.batch_normalization(h, **kwargs)
+                h = tf.contrib.layers.layer_norm(h, center=True, scale=True, activation_fn=actv)
                 current_layer += 1
 
             out = tf.layers.dense(h, units=n_classes, kernel_initializer=init)

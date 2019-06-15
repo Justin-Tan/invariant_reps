@@ -80,10 +80,6 @@ class Model():
             self.cross_entropy = tf.nn.sigmoid_cross_entropy_with_logits(logits=self.logits,
                 labels=(1-tf.one_hot(self.labels, depth=1)))
 
-            log_likelihood = -tf.reduce_sum(self.cross_entropy)
-            dldTheta = tf.gradients(log_likelihood, self.pivots)[0]
-            self.observed_fisher_information = tf.square(tf.squeeze(dldTheta))
-
             return
 
         with tf.variable_scope('classifier') as scope:
@@ -207,10 +203,17 @@ class Model():
                     # sum of update 2 and 3
                     alt_update = E_update_2 + E_update_3  # maximize this
 
+                    # kl update: Minimize E_{p(x,y)} [ \log D(x,z) / 1 - D(x,z) ]  
+                    log_D_xz = - tf.nn.sigmoid_cross_entropy_with_logits(logits=joint_f, labels=tf.ones_like(marginal_f))
+                    log_D_xz_c = tf.nn.sigmoid_cross_entropy_with_logits(logits=joint_f, labels=tf.zeros_like(marginal_f))
+                    kl_update = tf.reduce_mean(log_D_xz + log_D_xz_c)
+
                     if config.heuristic:
                         self.cost += config.MI_lambda * tf.nn.relu(-E_update_2)
                     elif config.combined:
                         self.cost += config.MI_lambda * tf.nn.relu(self.MINE_lower_bound - E_update_2)
+                    elif config.kl_update:
+                        self.cost += config.MI_lambda * kl_update
                     else:
                         # 'Minmax' cost
                         self.cost += config.MI_lambda * tf.nn.relu(self.MINE_lower_bound)

@@ -32,8 +32,10 @@ class Adversary(object):
                 )
 
             # Mask loss for signal events
-            adversary_loss = tf.reduce_mean(tf.cast((1-labels), 
-                tf.float32)*tf.nn.sparse_softmax_cross_entropy_with_logits(logits=adversary_logits,
+            #adversary_loss = tf.reduce_mean(tf.cast((1-labels), 
+            #    tf.float32)*tf.nn.sparse_softmax_cross_entropy_with_logits(logits=adversary_logits,
+            #        labels=tf.cast(pivot_labels[:,i], tf.int32)))
+            adversary_loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=adversary_logits,
                     labels=tf.cast(pivot_labels[:,i], tf.int32)))
 
             adversary_losses_dict[pivot] = adversary_loss

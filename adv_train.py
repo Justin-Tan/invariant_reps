@@ -34,9 +34,11 @@ def train(config, args):
         input_file = args.input
         test_file = args.test
 
-    features, labels, pivots, pivot_labels = Data.load_data(input_file, adversary=True, parquet=args.parquet)
+    features, labels, pivots, pivot_labels = Data.load_data(input_file, adversary=True, parquet=args.parquet,
+            adv_n_classes=config.adv_n_classes)
     print('FSHAPE', features.shape)
-    test_features, test_labels, test_pivots, test_pivot_labels = Data.load_data(test_file, adversary=True, parquet=args.parquet)
+    test_features, test_labels, test_pivots, test_pivot_labels = Data.load_data(test_file, adversary=True,
+            parquet=args.parquet, adv_n_classes=config.adv_n_classes)
 
     # Build graph
     model = Model(config, features=features, labels=labels, args=args)
@@ -118,6 +120,10 @@ def train(config, args):
                 # Run utils
                 v_auc_best = Utils.run_adv_diagnostics(model, config, directories, sess, saver, train_handle,
                     test_handle, start_time, v_auc_best, epoch, joint_step, args.name, v_cvm)
+
+                save_path = saver.save(sess, os.path.join(directories.checkpoints, 
+                    'adv_{}_epoch{}_step{}.ckpt'.format(args.name, epoch, joint_step)), global_step=epoch)
+                print('Starting epoch {}, Weights saved to file: {}'.format(epoch, save_path))
 
             while True:
                 try:

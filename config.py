@@ -10,14 +10,15 @@ class config_train(object):
     momentum = 0.9
     n_classes = 2
     MI_penalty = 8.0
-    MI_iterations = 16
-    MINE_learning_rate = 1e-3
+    MI_iterations = 8 
+    MINE_learning_rate = 8e-4
     D_learning_rate = 1e-5
     MI_label_lagrange_multiplier = 5.0
     gamma = 0.1
     lr_schedule = 'constant'
     n_features = 105
     test_metadata = '/data/cephfs/punim0011/jtan/data/df_tfit_v2_test_reduced_aux.h5'
+    kl_update = True
 
     # Adversary
     use_adversary = False
@@ -28,9 +29,9 @@ class config_train(object):
     adv_hidden_nodes = [128,128,128]
     adv_learning_rate = 1e-4
     adv_lambda = 4.0
-    adv_iterations = 4
-    adv_n_classes = 10  # number of bins for discretized predictions
-    n_epochs_initial = 4
+    adv_iterations = 16
+    adv_n_classes = 8  # number of bins for discretized predictions
+    n_epochs_initial = 10
 
 
 class config_test(object):
@@ -54,7 +55,7 @@ class config_test(object):
     adv_learning_rate = 4e-3
     adv_lambda = 4
     adv_iterations = 24
-    adv_n_classes = 10  # number of bins for discretized predictions
+    adv_n_classes = 8  # number of bins for discretized predictions
     n_epochs_initial = 4
 
 class directories(object):

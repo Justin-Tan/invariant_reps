@@ -62,7 +62,7 @@ class Utils(object):
                 print('Weights saved to file: {}'.format(save_path))
 
 
-        print('Epoch {} | Training Acc: {:.3f} | Test Acc: {:.3f} | Test auc: {:.3f} | MI_kraskov: {:.3f} | MI_MINE: {:.3f} | MI_labels_kraskov: {:.3f} | | MI_labels_MINE: {:.3f} | Train Loss: {:.3f} | Test Loss: {:.3f} | Test cvm: {:.3f} | Rate: {} examples/s ({:.2f} s) {}'.format(epoch, t_acc, v_acc, v_auc, v_MI_kraskov, v_MI_MINE, v_MI_labels_kraskov, v_MI_labels_MINE, t_loss, v_loss, v_cvm, int(config.batch_size * 1000 /(time.time()-t0)), time.time() - start_time, improved))
+        print('Epoch {} | Training Acc: {:.3f} | Test Acc: {:.3f} | Test auc: {:.3f} | MI_kraskov: {:.3f} | MI_MINE: {:.3f} | MI_labels_kraskov: {:.3f} | MI_labels_MINE: {:.3f} | Train Loss: {:.3f} | Test Loss: {:.3f} | Test cvm: {:.3f} | Rate: {} examples/s ({:.2f} s) {}'.format(epoch, t_acc, v_acc, v_auc, v_MI_kraskov, v_MI_MINE, v_MI_labels_kraskov, v_MI_labels_MINE, t_loss, v_loss, v_cvm, int(config.batch_size * 1000 /(time.time()-t0)), time.time() - start_time, improved))
 
         return v_auc_best
 

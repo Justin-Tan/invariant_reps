@@ -7,7 +7,7 @@ class Data(object):
 
     @staticmethod
     def load_data(filename, evaluate=False, adversary=False, parquet=False, tune=False,
-                  pivots=['_pivot'], auxillary=None, adv_n_classes=10):
+                  pivots=['_pivot'], auxillary=None, adv_n_classes=8):
 
         if parquet:
             import pyarrow.parquet as pq
@@ -22,6 +22,11 @@ class Data(object):
         if auxillary is None:
             # Cleanup + omit variables prefixed with an underscore from training
             auxillary = [col for col in df.columns if col.startswith('_')]
+            auxillary = list(set(auxillary))
+
+        # HACK
+        # p_cutoff = 2
+        # df = df[df._p < p_cutoff]
 
         df_features = df.drop(auxillary, axis=1)
         print('Data shape:', df_features.shape)
