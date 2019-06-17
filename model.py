@@ -157,17 +157,18 @@ class Model():
 
                 if config.bkg_only:
                     (x_joint, x_marginal), (joint_f, marginal_f), self.MI_logits_theta = Network.MINE(x=X_bkg, y=Z_bkg, y_prime=Z_prime_bkg,
-                            batch_size=config.batch_size, dimension=2, training=True, actv=tf.nn.elu, labels=self.labels, bkg_only=True, jensen_shannon=config.JSD)
-
+                            batch_size=config.batch_size, dimension=2, training=True, actv=tf.nn.elu, labels=self.labels, bkg_only=True, 
+                            jensen_shannon=config.JSD, apply_sn=config.spectral_norm)
                 else:
                     (x_joint, x_marginal), (joint_f, marginal_f), self.MI_logits_theta = Network.MINE(x=X, y=Z, y_prime=Z_prime,
-                            batch_size=config.batch_size, dimension=2, training=True, actv=tf.nn.elu, labels=self.labels, bkg_only=False, jensen_shannon=config.JSD)
+                            batch_size=config.batch_size, dimension=2, training=True, actv=tf.nn.elu, labels=self.labels, bkg_only=False, 
+                            jensen_shannon=config.JSD, apply_sn=config.spectral_norm)
 
             theta_MINE = Utils.scope_variables('MINE')
             theta_MINE_NY = Utils.scope_variables('LABEL_MINE')
-            print('Classifier parameters:', theta_f)
-            print('mine parameters', theta_MINE)
-            print('Label mine parameters', theta_MINE_NY)
+            Utils.get_parameter_overview(theta_f, 'CLASSIFIER PARAMETERS')
+            Utils.get_parameter_overview(theta_MINE, 'MI-EST PARAMETERS')
+            Utils.get_parameter_overview(theta_MINE_NY, 'MI-EST PARAMETERS (LABELS)')
             
             with tf.control_dependencies(update_ops):
                 # Ensures that we execute the update_ops before performing the train_step

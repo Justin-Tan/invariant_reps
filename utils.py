@@ -379,5 +379,62 @@ class Utils(object):
         def __init__(self, **entries):
             self.__dict__.update(entries)
 
+    @staticmethod
+    def get_parameter_overview(variables, title, limit=40):
+        """Returns a string with variables names, their shapes, count, and types.
+        To get all trainable parameters pass in `tf.trainable_variables()`.
+        Args:
+            variables: List of `tf.Variable`(s).
+            limit: If not `None`, the maximum number of variables to include.
+        Returns:
+            A string with a table like in the example.
+        +----------------+---------------+------------+---------+
+        | Name           | Shape         | Size       | Type    |
+        +----------------+---------------+------------+---------+
+        | FC_1/weights:0 | (63612, 1024) | 65,138,688 | float32 |
+        | FC_1/biases:0  |       (1024,) |      1,024 | float32 |
+        | FC_2/weights:0 |    (1024, 32) |     32,768 | float32 |
+        | FC_2/biases:0  |         (32,) |         32 | float32 |
+        +----------------+---------------+------------+---------+
+        Total: 65,172,512
+        """
+        print(title)
+        max_name_len = max([len(v.name) for v in variables] + [len("Name")])
+        max_shape_len = max([len(str(v.get_shape())) for v in variables] + [len(
+                "Shape")])
+        max_size_len = max([len("{:,}".format(v.get_shape().num_elements()))
+                                                for v in variables] + [len("Size")])
+        max_type_len = max([len(v.dtype.base_dtype.name) for v in variables] + [len(
+                "Type")])
+
+        var_line_format = "| {: <{}s} | {: >{}s} | {: >{}s} | {: <{}s} |"
+        sep_line_format = var_line_format.replace(" ", "-").replace("|", "+")
+
+        header = var_line_format.replace(">", "<").format("Name", max_name_len,
+                                                          "Shape", max_shape_len,
+                                                          "Size", max_size_len,
+                                                          "Type", max_type_len)
+        separator = sep_line_format.format("", max_name_len, "", max_shape_len, "",
+                                           max_size_len, "", max_type_len)
+
+        lines = [separator, header, separator]
+
+        total_weights = sum(v.get_shape().num_elements() for v in variables)
+
+        # Create lines for up to 80 variables.
+        for v in variables:
+            if limit is not None and len(lines) >= limit:
+                lines.append("[...]")
+                break
+            lines.append(var_line_format.format(
+                    v.name, max_name_len,
+                    str(v.get_shape()), max_shape_len,
+                    "{:,}".format(v.get_shape().num_elements()), max_size_len,
+                    v.dtype.base_dtype.name, max_type_len))
+
+        lines.append(separator)
+        lines.append("Total: {:,}".format(total_weights))
+
+        print("\n".join(lines))
 
 

@@ -129,6 +129,8 @@ def main(**kwargs):
     parser.add_argument("-heuristic", "--heuristic", help="Use heuristic cost formulation", action="store_true")
     parser.add_argument("-combined", "--combined", help="Use combined cost formulation", action="store_true")
     parser.add_argument("-reg", "--regularizer", help="Toggle gradient-based regularization", action="store_true")
+    parser.add_argument("-kl", "--kl_update", help="Use approximate D_KL minimization.", action="store_true")
+    parser.add_argument("-sn", "--spectral_norm", help="Apply spectral norm to discriminator", action="store_true")
     parser.add_argument("-bkg_only", "--bkg_only", help="Apply penalty only to bkg class.", action="store_true")
     parser.add_argument("-lambda", "--MI_lambda", default=0.0, help="Lagrange multiplier in MI-augmented objective.", type=float)
     parser.add_argument("-MI_iters", "--MI_iterations", default=16, help="Number of gradient steps of MI-est per clf update.", type=int)

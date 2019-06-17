@@ -10,6 +10,36 @@ from utils import Utils
 class Network(object):
 
     @staticmethod
+    def _spectral_norm(w):
+        w_shape = w.shape.as_list()
+        w = tf.reshape(w, [-1, w_shape[-1]])
+
+        with tf.variable_scope("u", reuse=tf.AUTO_REUSE):
+            u = tf.get_variable(
+            "u", [1, w_shape[-1]],
+            dtype=w.dtype,
+            initializer=tf.truncated_normal_initializer(),
+            trainable=False)
+
+        v_hat = tf.nn.l2_normalize(tf.matmul(u, tf.transpose(w)))
+        u_hat = tf.nn.l2_normalize(tf.matmul(v_hat, w))
+
+        with tf.control_dependencies([tf.assign(u, u_hat, name="update_u")]):
+            u_hat = tf.identity(u_hat)
+
+        u_hat = tf.stop_gradient(u_hat)
+        v_hat = tf.stop_gradient(v_hat)
+
+        sigma_w = tf.squeeze(tf.matmul(v_hat, tf.matmul(w, tf.transpose(u_hat))))
+
+        assign_u = tf.assign(u, u_hat)
+
+        w_sn = tf.divide(w, sigma_w)
+        w_sn = tf.reshape(w_sn, w_shape)
+
+        return w_sn
+
+    @staticmethod
     def dense_network(x, config, training, name='fully_connected', actv=tf.nn.relu, **kwargs):
         # Toy dense network for binary classification
         
@@ -70,7 +100,7 @@ class Network(object):
     @staticmethod
     def MINE(x, y, y_prime, training, batch_size, name='MINE', actv=tf.nn.elu, 
             n_layers=2, dimension=2, labels=None, jensen_shannon=True, 
-            standardize=False, **kwargs):
+            standardize=False, apply_sn=False, **kwargs):
         """
         Mutual Information Neural Estimator
         (x,y):      Drawn from joint p(x,y)
@@ -110,10 +140,18 @@ class Network(object):
         print('Z SHAPE:', z.get_shape().as_list())
         print('Z PRIME SHAPE:', z_prime.get_shape().as_list())
 
-        def statistic_network(t, name='MINE', reuse=False):
+        def statistic_network(t, name='MINE', apply_spectral_norm=False, reuse=False):
+
+            if apply_spectral_norm is True:
+                kernel_constraint = Network._spectral_norm
+                print('Applying spectral norm')
+            else:
+                kernel_constraint = None
+
             with tf.variable_scope(name, initializer=init, reuse=reuse) as scope:
 
-                h0 = tf.layers.dense(t, units=shape[0], activation=None)
+                h0 = tf.layers.dense(t, units=shape[0], activation=None, 
+                        kernel_constraint=kernel_constraint)
                 # h0 = tf.layers.batch_normalization(h0, **kwargs)
                 h0 = tf.contrib.layers.layer_norm(h0, center=True, scale=True, activation_fn=actv)
 
@@ -121,7 +159,8 @@ class Network(object):
                 current_layer = 1
 
                 while current_layer < n_layers:
-                    h = tf.layers.dense(h, units=shape[current_layer], activation=None)
+                    h = tf.layers.dense(h, units=shape[current_layer], activation=None,
+                            kernel_constraint=kernel_constraint)
                     h = tf.contrib.layers.layer_norm(h, center=True, scale=True, activation_fn=actv)
                     current_layer += 1
 
@@ -137,8 +176,8 @@ class Network(object):
             lse = x_max + tf.log(tf.reduce_sum(tf.exp(x-x_max))) - tf.log(batch_size)
             return lse
 
-        joint_f = statistic_network(z)
-        marginal_f = statistic_network(z_prime, reuse=True)
+        joint_f = statistic_network(z, apply_spectral_norm=apply_sn)
+        marginal_f = statistic_network(z_prime, reuse=True, apply_spectral_norm=apply_sn)
         print('Joint shape', joint_f.shape)
         print('marginal shape', marginal_f.shape)
 
