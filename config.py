@@ -17,7 +17,6 @@ class config_train(object):
     gamma = 0.1
     lr_schedule = 'constant'
     n_features = 105
-    test_metadata = '/data/cephfs/punim0011/jtan/data/df_tfit_v2_test_reduced_aux.h5'
     kl_update = True
 
     # Adversary
@@ -44,7 +43,6 @@ class config_test(object):
     momentum = 0.9
     n_classes = 2
     n_features = 105
-    test_metadata = '/data/cephfs/punim0011/jtan/data/df_tfit_v2_test_reduced_aux.h5'
 
     # Adversary
     use_adversary = False
@@ -59,9 +57,9 @@ class config_test(object):
     n_epochs_initial = 4
 
 class directories(object):
-    train = '/data/projects/punim0011/jtan/data/b2sll_dense_train.h5'
-    test = '/data/projects/punim0011/jtan/data/b2sll_dense_test.h5'
-    val = '/data/projects/punim0011/jtan/data/b2sll_dense_val.h5'
+    train = '/data/train.h5'
+    test = '/data/test.h5'
+    val = '/data/val.h5'
     tensorboard = 'tensorboard'
     checkpoints = 'checkpoints'
     checkpoints_best = 'checkpoints/best'

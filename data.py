@@ -24,10 +24,6 @@ class Data(object):
             auxillary = [col for col in df.columns if col.startswith('_')]
             auxillary = list(set(auxillary))
 
-        # HACK
-        # p_cutoff = 2
-        # df = df[df._p < p_cutoff]
-
         df_features = df.drop(auxillary, axis=1)
         print('Data shape:', df_features.shape)
         print('Features', df_features.columns.tolist())

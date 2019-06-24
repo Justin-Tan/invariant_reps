@@ -116,30 +116,46 @@ def train(config, args):
     print("Training Complete. Model saved to file: {} Time elapsed: {:.3f} s".format(save_path, time.time()-start_time))
 
 def main(**kwargs):
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-rl", "--restore_last", help="restore last saved model", action="store_true")
-    parser.add_argument("-r", "--restore_path", help="path to model to be restored", type=str)
-    parser.add_argument("-i", "--input", default=None, help="Path to training file", type=str)
-    parser.add_argument("-test", "--test", default=None, help="Path to test file", type=str)
-    parser.add_argument("-opt", "--optimizer", default="adam", help="Selected optimizer", type=str)
-    parser.add_argument("-n", "--name", default="MI_reg", help="Checkpoint/Tensorboard label")
-    parser.add_argument("-pq", "--parquet", help="Use if dataset is in parquet format", action="store_true")
-    parser.add_argument("-MI", "--mutual_information_penalty", help="Penalize mutual information between pivots and logits", action="store_true")
-    parser.add_argument("-JSD", "--JSD", help="Use Jensen-Shannon approximation of mutual information", action="store_true")
-    parser.add_argument("-heuristic", "--heuristic", help="Use heuristic cost formulation", action="store_true")
-    parser.add_argument("-combined", "--combined", help="Use combined cost formulation", action="store_true")
-    parser.add_argument("-reg", "--regularizer", help="Toggle gradient-based regularization", action="store_true")
-    parser.add_argument("-kl", "--kl_update", help="Use approximate D_KL minimization.", action="store_true")
-    parser.add_argument("-sn", "--spectral_norm", help="Apply spectral norm to discriminator", action="store_true")
-    parser.add_argument("-bkg_only", "--bkg_only", help="Apply penalty only to bkg class.", action="store_true")
-    parser.add_argument("-lambda", "--MI_lambda", default=0.0, help="Lagrange multiplier in MI-augmented objective.", type=float)
-    parser.add_argument("-MI_iters", "--MI_iterations", default=16, help="Number of gradient steps of MI-est per clf update.", type=int)
-    parser.add_argument("-re", "--restart_epoch", default=0, help="Epoch to restart from", type=int)
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    # Dataset-related options
+    dataset = parser.add_argument_group("Dataset-related options")
+    dataset.add_argument("-i", "--input", default=None, help="Path to training file", type=str)
+    dataset.add_argument("-test", "--test", default=None, help="Path to test file", type=str)
+    dataset.add_argument("-pq", "--parquet", help="Use if dataset is in parquet format", action="store_true")
+    dataset.add_argument("-n", "--name", default="MI_reg", help="Checkpoint/Tensorboard label")
+
+    # Optimization-related options
+    optim = parser.add_argument_group("Optimization-related options")
+    optim.add_argument("-opt", "--optimizer", default="adam", help="Selected optimizer", type=str)
+    optim.add_argument("-MI_iters", "--MI_iterations", default=16, help="""Number of gradient steps of the 'discriminator' 
+        per encoder gradient step.""", type=int)
+
+    # Penalty-related options
+    penalty = parser.add_argument_group("Penalty-related options. Note only one type of penalty should be active.")
+    penalty.add_argument("-MI", "--mutual_information_penalty", help="Penalize mutual information between Z and logits", action="store_true")
+    penalty.add_argument("-lambda", "--MI_lambda", default=0.0, help="Lagrange multiplier in MI-augmented objective.", type=float)
+    penalty.add_argument("-JSD", "--JSD", help="Use Jensen-Shannon approximation of mutual information", action="store_true")
+    penalty.add_argument("-heuristic", "--heuristic", help="Use heuristic cost formulation", action="store_true")
+    penalty.add_argument("-combined", "--combined", help="Use combined cost formulation", action="store_true")
+    penalty.add_argument("-kl", "--kl_update", help="Use approximate D_KL minimization.", action="store_true")
+
+    # Regularization-based options
+    reg = parser.add_argument_group("Regularization-related options to stabilize training.")
+    reg.add_argument("-jsd_reg", "--jsd_regularizer", help="Toggle gradient-based regularization", action="store_true")
+    reg.add_argument("-sn", "--spectral_norm", help="Apply spectral norm to discriminator", action="store_true")
+
+    # Miscellaneous options
+    misc = parser.add_argument_group("Miscellaneous options.")
+    misc.add_argument("-rl", "--restore_last", help="Restore last saved model", action="store_true")
+    misc.add_argument("-r", "--restore_path", help="Path to model to be restored", type=str)
+    misc.add_argument("-re", "--restart_epoch", default=0, help="Epoch to restart from", type=int)
+    misc.add_argument("-bkg_only", "--bkg_only", help="Apply penalty only to background class.", action="store_true")
+
     args = parser.parse_args()
-    config = config_train
 
     # Launch training
-    train(config, args)
+    train(config_train, args)
 
 if __name__ == '__main__':
     main()

@@ -175,7 +175,7 @@ class Model():
                 self.MINE_lower_bound = self.MI_logits_theta
                 self.MINE_labels_lower_bound = self.MI_logits_labels_MINE
 
-            if config.regularizer and config.JSD:
+            if config.jsd_regularizer and config.JSD:
                 print('Using Jensen-Shannon regularizer')
                 joint_logit_grads = tf.gradients(self.joint_f, self.x_joint)[0]
                 marginal_logit_grads = tf.gradients(self.marginal_f, self.x_marginal)[0]
@@ -186,7 +186,7 @@ class Model():
                 
             if config.mutual_information_penalty:
                 print('Penalizing mutual information')
-                if config.regularizer and config.JSD: 
+                if config.jsd_regularizer and config.JSD: 
                     self.cost += config.MI_lambda * (tf.nn.relu(self.MINE_lower_bound) - config.gamma/2.0 *
                         self.jsd_regularizer)
                 else:
