@@ -95,6 +95,30 @@ class Utils(object):
 
         return v_auc_best
 
+    @staticmethod
+    def jsd_metric(df, block, name, selection_fraction=0.01):
+        """
+        Attempt to quantify sculpting.
+        Evaluates mass decorrelation on some blackbox learner by evaluating a discrete
+        approximation of the Jensen-Shannon divergence between the distributions of interest
+        (here a mass-related quantity) passing and failing some learner threshold. If the 
+        learned representation used for classification is noninformative of the variable of
+        interest this should be low.
+        """
+        mbc_cutoff = 5.2425
+        mbc_upper = 5.29
+        df = df[df.B_Mbc > mbc_cutoff]
+        df = df[df.B_Mbc < mbc_upper]
+
+        v_auc = roc_auc_score(df.label.values, df.y_prob.values)
+        df_sig, df_bkg = df[df.label>0.5], df[df.label<0.5]
+        select_bkg = df_bkg.nlargest(int(df_bkg.shape[0]*selection_fraction), columns='y_prob')
+
+        min_threshold = select_bkg.y_prob.min()
+        df_tight = df[df.y_prob > min_threshold].query('B_deltaE < 0.1')
+        df_tight = df_tight[df_tight.B_deltaE > -0.25]
+        
+        return jsd_discrete
 
     @staticmethod
     def online_fit(df, block, name, plot_components=True):
@@ -373,6 +397,56 @@ class Utils(object):
             weights[k] = integrated_lumi * xsections[k] / event_counts[k]
 
         return weights
+
+    @staticmethod
+    def jsd_metric(df, selection_fraction=0.005, nbins=32, mbc_min=5.2425, mbc_max=5.29):
+        """
+        Attempt to quantify sculpting.
+        Evaluates mass decorrelation on some blackbox learner by evaluating a discrete
+        approximation of the Jensen-Shannon divergence between the distributions of interest
+        (here a mass-related quantity) passing and failing some learner threshold. If the 
+        learned representation used for classification is noninformative of the variable of
+        interest this should be low.
+        """
+
+        def _one_hot_encoding(x, nbins):
+            x_one_hot = np.zeros((x.shape[0], nbins))
+            x_one_hot[np.arange(x.shape[0]), x] = 1
+            x_one_hot_sum = np.sum(x_one_hot, axis=0)/x_one_hot.shape[0]
+
+            return x_one_hot_sum
+
+        df_bkg = df[df.label<0.5]
+        df_bkg = df_bkg[df_bkg.B_deltaE > -0.25].query('B_deltaE < 0.1')
+        select_bkg = df_bkg.nlargest(int(df_bkg.shape[0]*selection_fraction), columns='y_prob')
+        min_threshold = select_bkg.y_prob.min()
+
+        df_pass = df_bkg[df_bkg.y_prob > min_threshold]
+        df_bkg_pass = df_pass[df_pass.label < 0.5]
+
+        df_fail = df_bkg[df_bkg.y_prob < min_threshold]
+        df_bkg_fail = df_fail[df_fail.label < 0.5]
+
+        N_bkg_pass = int(df_bkg_pass._weight_.sum())
+        N_bkg_fail = int(df_bkg_fail._weight_.sum())
+        print('N_bkg_pass / N_bkg_fail: {}'.format(N_bkg_pass/N_bkg_fail))
+
+        # Discretization
+        mbc_bkg_pass_discrete = np.digitize(df_bkg_pass.B_Mbc, bins=np.linspace(mbc_min,mbc_max,nbins+1), right=False)-1
+        mbc_bkg_fail_discrete = np.digitize(df_bkg_fail.B_Mbc, bins=np.linspace(mbc_min,mbc_max,nbins+1), right=False)-1
+
+        mbc_bkg_pass_sum = _one_hot_encoding(mbc_bkg_pass_discrete, nbins)
+        mbc_bkg_fail_sum = _one_hot_encoding(mbc_bkg_fail_discrete, nbins)
+
+        M = 0.5*mbc_bkg_pass_sum + 0.5*mbc_bkg_fail_sum
+
+        kld_pass = scipy.stats.entropy(mbc_bkg_pass_sum, M)
+        kld_fail = scipy.stats.entropy(mbc_bkg_fail_sum, M)
+
+        jsd_discrete = 0.5*kld_pass + 0.5*kld_fail
+
+        return jsd_discrete
+
 
     @staticmethod
     class Struct:

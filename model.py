@@ -221,8 +221,9 @@ class Model():
 
                 self.grad_loss = tf.get_variable(name='grad_loss', shape=[], trainable=False)
                 self.grads = self.opt.compute_gradients(self.MI_logits_theta, grad_loss=self.grad_loss)
-                self.opt_op = self.opt.minimize(self.cost, global_step=self.global_step, var_list=theta_f)
-            
+
+            self.opt_op = self.opt.minimize(self.cost, global_step=self.global_step, var_list=theta_f)
+
             MINE_opt = tf.train.AdamOptimizer(config.MINE_learning_rate)
 
             self.MINE_opt_op = MINE_opt.minimize(-self.MINE_lower_bound, var_list=theta_MINE,
